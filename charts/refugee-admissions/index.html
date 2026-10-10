@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Every refugee the United States admitted, FY1975–FY2026, by region and country of origin, with the president in office. From The Refugee Bureau.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="The Refugee Bureau">
+<meta property="og:title" content="Refugee Admissions, 1975–2026">
+<meta property="og:description" content="Every refugee the United States admitted, FY1975–FY2026, by region and country of origin, with the president in office. From The Refugee Bureau.">
+<meta property="og:url" content="https://therefugeebureau.github.io/charts/refugee-admissions/">
+<meta property="og:image" content="https://therefugeebureau.github.io/charts/refugee-admissions/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://therefugeebureau.github.io/charts/refugee-admissions/">
+<title>Refugee Admissions, 1975–2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: one newsprint sheet, matching The Refugee Bureau's explainer videos — header, chart + year panel side by side
+   (stacked on phones), then legend, table and sources. Single light theme on purpose: it is the series' paper look. */
+:root {
+  color-scheme: light;
+  --paper: #F2EBDD;
+  --card: #F9F5EC;
+  --ink: #16181D;
+  --muted: #6F6A5E;
+  --rule: #CFC6B4;
+  --hl: #F5D547;
+  --signal: #D55E00;
+  /* regions: Okabe-Ito, same assignment as the videos */
+  --r-east_asia: #009E73;
+  --r-latin_america_caribbean: #56B4E9;
+  --r-europe_central_asia: #CC79A7;
+  --r-africa: #E69F00;
+  --r-near_east_south_asia: #0072B2;
+  --r-other_psi: #999999;
+  --pres-a: #DDD4C2;
+  --pres-b: #CBC1AD;
+  --f-head: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --f-num: "IBM Plex Sans Condensed", "Arial Narrow", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+html { background: var(--paper); }
+body { background: var(--paper); color: var(--ink); font-family: var(--f-num); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 48px; }
+.mast { display: inline-flex; flex-direction: column; gap: 6px; }
+.mast .t { font-family: var(--f-head); font-weight: 700; letter-spacing: .11em; text-transform: uppercase; font-size: 15px;
+  border-top: 2px solid var(--ink); border-bottom: 2px solid var(--ink); padding: 3px 0 2px .11em; }
+.mast .l { font-family: var(--f-mono); font-size: 11px; letter-spacing: .14em; color: var(--muted); text-align: center; }
+h1 { font-family: var(--f-head); font-weight: 800; font-size: clamp(36px, 6vw, 60px); line-height: .95; margin: 22px 0 10px; text-wrap: balance; }
+.lead { font-size: 18px; line-height: 1.45; max-width: 62ch; margin: 0 0 18px; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 12px; }
+.seg { display: inline-flex; border: 1.5px solid var(--ink); border-radius: 4px; overflow: hidden; }
+.seg button { font: 500 14px var(--f-mono); background: transparent; color: var(--ink); border: 0; padding: 7px 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.seg button:focus-visible, #chart:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+.hint { font: 13px var(--f-mono); color: var(--muted); }
+.cap { font-size: 15px; line-height: 1.45; margin: 0 0 10px; max-width: 75ch; }
+.cap b { font-weight: 600; }
+.cap span { color: var(--muted); }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+@media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+#chart { width: 100%; display: block; touch-action: pan-y; cursor: crosshair; }
+#chart text { font-family: var(--f-mono); font-size: 11px; fill: var(--muted); }
+#chart .pres text { fill: var(--ink); font-size: 11px; }
+#chart .pres text.pty { fill: var(--muted); font-size: 10px; }
+#chart text.yt { fill: var(--ink); font-weight: 500; }
+.panel { background: var(--card); padding: 18px 20px 20px; box-shadow: 0 1px 0 rgba(40,30,15,.08), 0 10px 22px rgba(60,40,15,.12); min-width: 0; }
+.panel .fy { font-family: var(--f-head); font-weight: 800; font-size: 40px; line-height: 1; }
+.panel .dates { font: 12px var(--f-mono); color: var(--muted); margin-top: 4px; }
+.panel .total { font-family: var(--f-num); font-weight: 600; font-size: 34px; font-variant-numeric: tabular-nums; margin-top: 12px; }
+.panel .total small { font: 500 13px var(--f-mono); color: var(--muted); margin-left: 6px; }
+.panel .pres { font: 500 13px var(--f-mono); margin-top: 6px; }
+.panel h3 { font: 500 11px var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 16px 0 8px; }
+.rows { display: grid; gap: 6px; }
+.row { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: 14px; }
+.row .sw { width: 12px; height: 12px; border-radius: 2px; }
+.row .v { font-variant-numeric: tabular-nums; font-weight: 600; }
+.row .v small { font-weight: 500; color: var(--muted); margin-left: 6px; }
+.row .nm { overflow-wrap: anywhere; }
+.note { font: 12px var(--f-mono); color: var(--muted); line-height: 1.5; margin-top: 10px; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font: 13px var(--f-mono); margin: 12px 0 0; padding: 0; list-style: none; }
+.legend li { display: inline-flex; align-items: center; gap: 8px; }
+.legend .sw { width: 12px; height: 12px; border-radius: 2px; }
+.legend-note { font: 12.5px/1.5 var(--f-mono); color: var(--muted); margin: 8px 0 0; max-width: 75ch; }
+.legend-note .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: var(--r-other_psi); margin-right: 6px; }
+details { margin-top: 28px; border-top: 1.5px solid var(--ink); padding-top: 12px; }
+summary { font: 500 14px var(--f-mono); cursor: pointer; }
+.tbl { overflow-x: auto; margin-top: 12px; }
+table { border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; min-width: 760px; }
+th, td { padding: 5px 10px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th { font: 500 11px var(--f-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+th:first-child, td:first-child { text-align: left; }
+.sources { margin-top: 28px; border-top: 1.5px solid var(--ink); padding-top: 12px; font: 12.5px/1.6 var(--f-mono); color: var(--muted); max-width: 90ch; }
+.sources p { margin: 0 0 8px; }
+.sources a { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="mast"><div class="t">The Refugee Bureau</div><div class="l">DATA EXPLAINER · COMPANION</div></div>
+  <h1>Refugee Admissions, 1975–2026</h1>
+  <p class="lead">Every refugee the United States admitted, by fiscal year. Hover over or tap a year to see where people came from and who was president.</p>
+
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Chart view">
+      <button id="v-region" aria-pressed="true">By region</button>
+      <button id="v-countries" aria-pressed="false">Countries of origin</button>
+    </div>
+    <span class="hint" id="hint">Use ← → keys on the chart to step through years.</span>
+  </div>
+  <p class="cap" id="cap"></p>
+
+  <div class="grid">
+    <div style="min-width:0">
+      <svg id="chart" tabindex="0" role="img" aria-label="Refugee admissions by fiscal year"></svg>
+      <ul class="legend" id="legend"></ul>
+      <p class="legend-note" id="psiNote"></p>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+
+  <details>
+    <summary>Show the data table</summary>
+    <div class="tbl"><table id="table"></table></div>
+  </details>
+
+  <div class="sources">
+    <p><b>Data:</b> U.S. Department of State, Bureau of Population, Refugees, and Migration, Refugee Processing Center, <i>Summary of Refugee Admissions</i>, <span id="asof"></span> (<a href="https://www.rpc.state.gov/admissions-and-arrivals/" target="_blank" rel="noopener">rpc.state.gov</a>).</p>
+    <p><b>Notes:</b> A fiscal year runs October 1 to September 30. FY1975–79 figures are rounded estimates in the source. Regions are harmonized: Europe &amp; Central Asia includes the source's "Former Soviet Union" and "Kosovo" columns; East Asia includes Amerasian immigrants. The Private Sector Initiative (FY1988–93) counts privately funded admissions, which the source reports apart from the regions. Country detail begins in FY2001 and uses the source's country of chargeability; colors in the country view and the year panel are each country's region. Presidents are shown by their dates in office, so a fiscal year can span two.</p>
+  </div>
+</div>
+
+<script>
+const DATA = {"years":[{"fy":1975,"total":146158,"r":{"east_asia":135000,"europe_central_asia":8158,"latin_america_caribbean":3000}},{"fy":1976,"total":27206,"r":{"east_asia":15000,"europe_central_asia":9206,"latin_america_caribbean":3000}},{"fy":1977,"total":19946,"r":{"east_asia":7000,"europe_central_asia":9946,"latin_america_caribbean":3000}},{"fy":1978,"total":36507,"r":{"east_asia":20574,"europe_central_asia":12933,"latin_america_caribbean":3000}},{"fy":1979,"total":111363,"r":{"east_asia":76521,"europe_central_asia":27842,"latin_america_caribbean":7000}},{"fy":1980,"total":207116,"r":{"east_asia":163799,"europe_central_asia":33469,"latin_america_caribbean":6662,"near_east_south_asia":2231,"africa":955}},{"fy":1981,"total":159252,"r":{"east_asia":131139,"europe_central_asia":20148,"latin_america_caribbean":2017,"near_east_south_asia":3829,"africa":2119}},{"fy":1982,"total":98096,"r":{"east_asia":73755,"europe_central_asia":13869,"latin_america_caribbean":580,"near_east_south_asia":6480,"africa":3412}},{"fy":1983,"total":61218,"r":{"east_asia":39245,"europe_central_asia":13209,"latin_america_caribbean":691,"near_east_south_asia":5428,"africa":2645}},{"fy":1984,"total":70393,"r":{"east_asia":51978,"europe_central_asia":10817,"latin_america_caribbean":150,"near_east_south_asia":4699,"africa":2749}},{"fy":1985,"total":67704,"r":{"east_asia":49962,"europe_central_asia":9856,"latin_america_caribbean":151,"near_east_south_asia":5784,"africa":1951}},{"fy":1986,"total":62146,"r":{"east_asia":45482,"europe_central_asia":9302,"latin_america_caribbean":131,"near_east_south_asia":5909,"africa":1322}},{"fy":1987,"total":64528,"r":{"east_asia":40099,"europe_central_asia":12095,"latin_america_caribbean":323,"near_east_south_asia":10021,"africa":1990}},{"fy":1988,"total":76483,"r":{"east_asia":35371,"europe_central_asia":27921,"latin_america_caribbean":2497,"near_east_south_asia":8368,"africa":1593,"other_psi":733}},{"fy":1989,"total":107070,"r":{"east_asia":45722,"europe_central_asia":48354,"latin_america_caribbean":2604,"near_east_south_asia":6938,"africa":1902,"other_psi":1550}},{"fy":1990,"total":122066,"r":{"east_asia":51598,"europe_central_asia":56722,"latin_america_caribbean":2305,"near_east_south_asia":4979,"africa":3453,"other_psi":3009}},{"fy":1991,"total":113389,"r":{"east_asia":53522,"europe_central_asia":46063,"latin_america_caribbean":2253,"near_east_south_asia":5342,"africa":4420,"other_psi":1789}},{"fy":1992,"total":132531,"r":{"east_asia":51899,"europe_central_asia":64312,"latin_america_caribbean":3065,"near_east_south_asia":6903,"africa":5470,"other_psi":882}},{"fy":1993,"total":119448,"r":{"east_asia":49817,"europe_central_asia":51355,"latin_america_caribbean":4071,"near_east_south_asia":6987,"africa":6967,"other_psi":251}},{"fy":1994,"total":112981,"r":{"east_asia":43564,"europe_central_asia":51561,"latin_america_caribbean":6156,"near_east_south_asia":5840,"africa":5860}},{"fy":1995,"total":99974,"r":{"east_asia":36987,"europe_central_asia":46021,"latin_america_caribbean":7629,"near_east_south_asia":4510,"africa":4827}},{"fy":1996,"total":76403,"r":{"east_asia":19321,"europe_central_asia":41961,"latin_america_caribbean":3550,"near_east_south_asia":3967,"africa":7604}},{"fy":1997,"total":70488,"r":{"east_asia":8594,"europe_central_asia":48732,"latin_america_caribbean":2996,"near_east_south_asia":4101,"africa":6065}},{"fy":1998,"total":77080,"r":{"east_asia":10854,"europe_central_asia":54399,"latin_america_caribbean":1627,"near_east_south_asia":3313,"africa":6887}},{"fy":1999,"total":85525,"r":{"east_asia":10206,"europe_central_asia":56068,"latin_america_caribbean":2110,"near_east_south_asia":4098,"africa":13043}},{"fy":2000,"total":73147,"r":{"east_asia":4561,"europe_central_asia":37664,"latin_america_caribbean":3232,"near_east_south_asia":10129,"africa":17561}},{"fy":2001,"total":69886,"r":{"east_asia":4163,"europe_central_asia":31772,"latin_america_caribbean":2975,"near_east_south_asia":11956,"africa":19020},"n":79,"nr":{"europe_central_asia":26,"near_east_south_asia":14,"africa":28,"east_asia":8,"latin_america_caribbean":3},"ceiling":80000,"top":[["Bosnia and Herzegovina",13827,"europe_central_asia","BA"],["Ukraine",7313,"europe_central_asia","UA"],["Iran",6461,"near_east_south_asia","IR"],["Sudan",5944,"africa","SD"],["Somalia",4946,"africa","SO"]]},{"fy":2002,"total":27131,"r":{"east_asia":3512,"europe_central_asia":15428,"latin_america_caribbean":1934,"near_east_south_asia":3706,"africa":2551},"n":63,"nr":{"europe_central_asia":21,"east_asia":7,"latin_america_caribbean":3,"near_east_south_asia":7,"africa":25},"ceiling":70000,"top":[["Ukraine",5217,"europe_central_asia","UA"],["Bosnia and Herzegovina",3481,"europe_central_asia","BA"],["Vietnam",3331,"east_asia","VN"],["Russia",2105,"europe_central_asia","RU"],["Cuba",1919,"latin_america_caribbean","CU"]]},{"fy":2003,"total":28403,"r":{"east_asia":1724,"europe_central_asia":11250,"latin_america_caribbean":455,"near_east_south_asia":4260,"africa":10714},"n":70,"nr":{"europe_central_asia":23,"africa":26,"near_east_south_asia":11,"east_asia":8,"latin_america_caribbean":2},"ceiling":70000,"top":[["Ukraine",5065,"europe_central_asia","UA"],["Liberia",2956,"africa","LR"],["Iran",2471,"near_east_south_asia","IR"],["Sudan",2139,"africa","SD"],["Somalia",1994,"africa","SO"]]},{"fy":2004,"total":52873,"r":{"east_asia":8084,"europe_central_asia":9254,"latin_america_caribbean":3577,"near_east_south_asia":2854,"africa":29104},"n":65,"nr":{"africa":21,"east_asia":6,"europe_central_asia":20,"latin_america_caribbean":5,"near_east_south_asia":13},"ceiling":70000,"top":[["Somalia",13331,"africa","SO"],["Liberia",7140,"africa","LR"],["Laos",6005,"east_asia","LA"],["Sudan",3500,"africa","SD"],["Ukraine",3482,"europe_central_asia","UA"]]},{"fy":2005,"total":53813,"r":{"east_asia":12076,"europe_central_asia":11316,"latin_america_caribbean":6699,"near_east_south_asia":2977,"africa":20745},"n":63,"nr":{"africa":24,"east_asia":6,"latin_america_caribbean":4,"europe_central_asia":20,"near_east_south_asia":9},"ceiling":70000,"top":[["Somalia",10405,"africa","SO"],["Laos",8517,"east_asia","LA"],["Cuba",6360,"latin_america_caribbean","CU"],["Russia",5982,"europe_central_asia","RU"],["Liberia",4289,"africa","LR"]]},{"fy":2006,"total":41223,"r":{"east_asia":5659,"europe_central_asia":10456,"latin_america_caribbean":3264,"near_east_south_asia":3718,"africa":18126},"n":68,"nr":{"africa":26,"europe_central_asia":19,"east_asia":7,"latin_america_caribbean":4,"near_east_south_asia":12},"ceiling":70000,"top":[["Somalia",10357,"africa","SO"],["Russia",6003,"europe_central_asia","RU"],["Vietnam",3168,"east_asia","VN"],["Cuba",3143,"latin_america_caribbean","CU"],["Iran",2792,"near_east_south_asia","IR"]]},{"fy":2007,"total":48282,"r":{"east_asia":15643,"europe_central_asia":4560,"latin_america_caribbean":2976,"near_east_south_asia":7620,"africa":17483},"n":63,"nr":{"east_asia":7,"africa":26,"near_east_south_asia":12,"latin_america_caribbean":2,"europe_central_asia":16},"ceiling":70000,"top":[["Burma",13896,"east_asia","MM"],["Somalia",6969,"africa","SO"],["Iran",5482,"near_east_south_asia","IR"],["Burundi",4545,"africa","BI"],["Cuba",2922,"latin_america_caribbean","CU"]]},{"fy":2008,"total":60191,"r":{"east_asia":19489,"europe_central_asia":2343,"latin_america_caribbean":4277,"near_east_south_asia":25147,"africa":8935},"n":64,"nr":{"east_asia":7,"near_east_south_asia":14,"latin_america_caribbean":4,"africa":24,"europe_central_asia":15},"ceiling":80000,"top":[["Burma",18139,"east_asia","MM"],["Iraq",13822,"near_east_south_asia","IQ"],["Bhutan",5320,"near_east_south_asia","BT"],["Iran",5270,"near_east_south_asia","IR"],["Cuba",4177,"latin_america_caribbean","CU"]]},{"fy":2009,"total":74654,"r":{"east_asia":19850,"europe_central_asia":1997,"latin_america_caribbean":4857,"near_east_south_asia":38280,"africa":9670},"n":66,"nr":{"near_east_south_asia":14,"east_asia":7,"latin_america_caribbean":2,"africa":29,"europe_central_asia":14},"ceiling":80000,"top":[["Iraq",18838,"near_east_south_asia","IQ"],["Burma",18202,"east_asia","MM"],["Bhutan",13452,"near_east_south_asia","BT"],["Iran",5381,"near_east_south_asia","IR"],["Cuba",4800,"latin_america_caribbean","CU"]]},{"fy":2010,"total":73311,"r":{"east_asia":17716,"europe_central_asia":1526,"latin_america_caribbean":4982,"near_east_south_asia":35782,"africa":13305},"n":72,"nr":{"near_east_south_asia":20,"east_asia":8,"africa":26,"latin_america_caribbean":5,"europe_central_asia":13},"ceiling":80000,"top":[["Iraq",18016,"near_east_south_asia","IQ"],["Burma",16693,"east_asia","MM"],["Bhutan",12363,"near_east_south_asia","BT"],["Somalia",4884,"africa","SO"],["Cuba",4818,"latin_america_caribbean","CU"]]},{"fy":2011,"total":56424,"r":{"east_asia":17367,"europe_central_asia":1228,"latin_america_caribbean":2976,"near_east_south_asia":27168,"africa":7685},"n":69,"nr":{"east_asia":9,"near_east_south_asia":16,"africa":26,"latin_america_caribbean":4,"europe_central_asia":14},"ceiling":80000,"top":[["Burma",16972,"east_asia","MM"],["Bhutan",14999,"near_east_south_asia","BT"],["Iraq",9388,"near_east_south_asia","IQ"],["Somalia",3161,"africa","SO"],["Cuba",2920,"latin_america_caribbean","CU"]]},{"fy":2012,"total":58238,"r":{"east_asia":14366,"europe_central_asia":1129,"latin_america_caribbean":2078,"near_east_south_asia":30057,"africa":10608},"n":66,"nr":{"near_east_south_asia":18,"east_asia":8,"africa":26,"latin_america_caribbean":3,"europe_central_asia":11},"ceiling":76000,"top":[["Bhutan",15070,"near_east_south_asia","BT"],["Burma",14160,"east_asia","MM"],["Iraq",12163,"near_east_south_asia","IQ"],["Somalia",4911,"africa","SO"],["Cuba",1948,"latin_america_caribbean","CU"]]},{"fy":2013,"total":69926,"r":{"east_asia":16537,"europe_central_asia":580,"latin_america_caribbean":4439,"near_east_south_asia":32390,"africa":15980},"n":64,"nr":{"near_east_south_asia":16,"east_asia":7,"africa":24,"latin_america_caribbean":4,"europe_central_asia":13},"ceiling":70000,"top":[["Iraq",19488,"near_east_south_asia","IQ"],["Burma",16299,"east_asia","MM"],["Bhutan",9134,"near_east_south_asia","BT"],["Somalia",7608,"africa","SO"],["Cuba",4205,"latin_america_caribbean","CU"]]},{"fy":2014,"total":69987,"r":{"east_asia":14784,"europe_central_asia":959,"latin_america_caribbean":4318,"near_east_south_asia":32450,"africa":17476},"n":67,"nr":{"near_east_south_asia":19,"east_asia":7,"africa":26,"latin_america_caribbean":3,"europe_central_asia":12},"ceiling":70000,"top":[["Iraq",19769,"near_east_south_asia","IQ"],["Burma",14598,"east_asia","MM"],["Somalia",9000,"africa","SO"],["Bhutan",8434,"near_east_south_asia","BT"],["Dem. Rep. Congo",4540,"africa","CD"]]},{"fy":2015,"total":69933,"r":{"east_asia":18469,"europe_central_asia":2363,"latin_america_caribbean":2050,"near_east_south_asia":24579,"africa":22472},"n":69,"nr":{"east_asia":5,"near_east_south_asia":19,"africa":29,"latin_america_caribbean":4,"europe_central_asia":12},"ceiling":70000,"top":[["Burma",18386,"east_asia","MM"],["Iraq",12676,"near_east_south_asia","IQ"],["Somalia",8858,"africa","SO"],["Dem. Rep. Congo",7876,"africa","CD"],["Bhutan",5775,"near_east_south_asia","BT"]]},{"fy":2016,"total":84994,"r":{"east_asia":12518,"europe_central_asia":3957,"latin_america_caribbean":1340,"near_east_south_asia":35555,"africa":31624},"n":78,"nr":{"africa":27,"near_east_south_asia":19,"east_asia":10,"europe_central_asia":16,"latin_america_caribbean":6},"ceiling":85000,"top":[["Dem. Rep. Congo",16370,"africa","CD"],["Syria",12587,"near_east_south_asia","SY"],["Burma",12347,"east_asia","MM"],["Iraq",9880,"near_east_south_asia","IQ"],["Somalia",9020,"africa","SO"]]},{"fy":2017,"total":53716,"r":{"east_asia":5173,"europe_central_asia":5205,"latin_america_caribbean":1688,"near_east_south_asia":21418,"africa":20232},"n":77,"nr":{"africa":30,"near_east_south_asia":20,"east_asia":9,"europe_central_asia":13,"latin_america_caribbean":5},"ceiling":110000,"top":[["Dem. Rep. Congo",9377,"africa","CD"],["Iraq",6886,"near_east_south_asia","IQ"],["Syria",6557,"near_east_south_asia","SY"],["Somalia",6130,"africa","SO"],["Burma",5078,"east_asia","MM"]]},{"fy":2018,"total":22676,"r":{"east_asia":3671,"europe_central_asia":3612,"latin_america_caribbean":959,"near_east_south_asia":3852,"africa":10582},"n":65,"nr":{"africa":25,"east_asia":6,"europe_central_asia":11,"near_east_south_asia":17,"latin_america_caribbean":6},"ceiling":45000,"top":[["Dem. Rep. Congo",7883,"africa","CD"],["Burma",3558,"east_asia","MM"],["Ukraine",2635,"europe_central_asia","UA"],["Bhutan",2228,"near_east_south_asia","BT"],["Eritrea",1270,"africa","ER"]]},{"fy":2019,"total":30000,"r":{"east_asia":5030,"europe_central_asia":4994,"latin_america_caribbean":809,"near_east_south_asia":2801,"africa":16366},"n":66,"nr":{"africa":26,"east_asia":6,"europe_central_asia":10,"near_east_south_asia":18,"latin_america_caribbean":6},"ceiling":30000,"top":[["Dem. Rep. Congo",12958,"africa","CD"],["Burma",4932,"east_asia","MM"],["Ukraine",4451,"europe_central_asia","UA"],["Eritrea",1757,"africa","ER"],["Afghanistan",1198,"near_east_south_asia","AF"]]},{"fy":2020,"total":11814,"r":{"east_asia":2129,"europe_central_asia":2578,"latin_america_caribbean":948,"near_east_south_asia":1999,"africa":4160},"n":55,"nr":{"africa":23,"east_asia":3,"europe_central_asia":6,"near_east_south_asia":16,"latin_america_caribbean":7},"ceiling":18000,"top":[["Dem. Rep. Congo",2868,"africa","CD"],["Burma",2115,"east_asia","MM"],["Ukraine",1927,"europe_central_asia","UA"],["Afghanistan",604,"near_east_south_asia","AF"],["Iraq",537,"near_east_south_asia","IQ"]]},{"fy":2021,"total":11411,"r":{"east_asia":776,"europe_central_asia":983,"latin_america_caribbean":400,"near_east_south_asia":3033,"africa":6219},"n":50,"nr":{"africa":20,"near_east_south_asia":14,"europe_central_asia":7,"east_asia":3,"latin_america_caribbean":6},"ceiling":62500,"top":[["Dem. Rep. Congo",4891,"africa","CD"],["Syria",1246,"near_east_south_asia","SY"],["Afghanistan",872,"near_east_south_asia","AF"],["Ukraine",803,"europe_central_asia","UA"],["Burma",772,"east_asia","MM"]]},{"fy":2022,"total":25465,"r":{"east_asia":2215,"europe_central_asia":2351,"latin_america_caribbean":2485,"near_east_south_asia":7056,"africa":11358},"n":56,"nr":{"africa":21,"near_east_south_asia":15,"east_asia":6,"europe_central_asia":8,"latin_america_caribbean":6},"ceiling":125000,"top":[["Dem. Rep. Congo",7810,"africa","CD"],["Syria",4556,"near_east_south_asia","SY"],["Burma",2156,"east_asia","MM"],["Sudan",1669,"africa","SD"],["Afghanistan",1618,"near_east_south_asia","AF"]]},{"fy":2023,"total":60014,"r":{"east_asia":6262,"europe_central_asia":2765,"latin_america_caribbean":6312,"near_east_south_asia":20194,"africa":24481},"n":75,"nr":{"africa":27,"near_east_south_asia":20,"east_asia":5,"latin_america_caribbean":12,"europe_central_asia":11},"ceiling":125000,"top":[["Dem. Rep. Congo",18145,"africa","CD"],["Syria",10781,"near_east_south_asia","SY"],["Afghanistan",6594,"near_east_south_asia","AF"],["Burma",6185,"east_asia","MM"],["Guatemala",1748,"latin_america_caribbean","GT"]]},{"fy":2024,"total":100034,"r":{"east_asia":7540,"europe_central_asia":3180,"latin_america_caribbean":25358,"near_east_south_asia":29939,"africa":34017},"n":85,"nr":{"africa":32,"near_east_south_asia":18,"latin_america_caribbean":15,"east_asia":6,"europe_central_asia":14},"ceiling":125000,"top":[["Dem. Rep. Congo",19923,"africa","CD"],["Afghanistan",14708,"near_east_south_asia","AF"],["Venezuela",12875,"latin_america_caribbean","VE"],["Syria",11274,"near_east_south_asia","SY"],["Burma",7347,"east_asia","MM"]]},{"fy":2025,"total":38102,"r":{"east_asia":3675,"europe_central_asia":816,"latin_america_caribbean":8353,"near_east_south_asia":12977,"africa":12281},"n":69,"nr":{"near_east_south_asia":14,"africa":25,"latin_america_caribbean":14,"east_asia":4,"europe_central_asia":12},"ceiling":125000,"top":[["Afghanistan",6758,"near_east_south_asia","AF"],["Dem. Rep. Congo",5672,"africa","CD"],["Venezuela",4559,"latin_america_caribbean","VE"],["Syria",4553,"near_east_south_asia","SY"],["Burma",3599,"east_asia","MM"]]},{"fy":2026,"total":16292,"r":{"near_east_south_asia":5,"africa":16287},"n":2,"nr":{"africa":1,"near_east_south_asia":1},"ceiling":17500,"top":[["South Africa",16287,"africa","ZA"],["Afghanistan",5,"near_east_south_asia","AF"]]}],"labels":{"east_asia":"East Asia","europe_central_asia":"Europe & Central Asia","latin_america_caribbean":"Latin America & Caribbean","near_east_south_asia":"Near East & South Asia","africa":"Africa","other_psi":"Private Sector Initiative"},"asOf":"as of 30-September-2026","median":69926,"pres":[{"name":"Gerald Ford","short":"Ford","party":"R","start":"1974-08-09","end":"1977-01-20"},{"name":"Jimmy Carter","short":"Carter","party":"D","start":"1977-01-20","end":"1981-01-20"},{"name":"Ronald Reagan","short":"Reagan","party":"R","start":"1981-01-20","end":"1989-01-20"},{"name":"George H.W. Bush","short":"H.W. Bush","party":"R","start":"1989-01-20","end":"1993-01-20"},{"name":"Bill Clinton","short":"Clinton","party":"D","start":"1993-01-20","end":"2001-01-20"},{"name":"George W. Bush","short":"W. Bush","party":"R","start":"2001-01-20","end":"2009-01-20"},{"name":"Barack Obama","short":"Obama","party":"D","start":"2009-01-20","end":"2017-01-20"},{"name":"Donald Trump","short":"Trump","term":"1st term","party":"R","start":"2017-01-20","end":"2021-01-20"},{"name":"Joe Biden","short":"Biden","party":"D","start":"2021-01-20","end":"2025-01-20"},{"name":"Donald Trump","short":"Trump","term":"2nd term","party":"R","start":"2025-01-20","end":null}],"fyLast":2026,"psi":[1988,1993],"countryFrom":2001};
+const ORDER = ["east_asia", "latin_america_caribbean", "europe_central_asia", "africa", "near_east_south_asia", "other_psi"];
+const PRES = DATA.pres.map(p => ({ ...p, end: p.end || `${DATA.fyLast}-10-01`, ongoing: !p.end }));
+const fmt = n => n.toLocaleString("en-US");
+const pct = r => r < 0.001 ? "<0.1%" : r < 0.01 ? (100 * r).toFixed(1) + "%" : r > 0.995 && r < 1 ? (100 * r).toFixed(2) + "%" : Math.round(100 * r) + "%";
+const css = getComputedStyle(document.documentElement);
+const col = k => css.getPropertyValue(`--r-${k}`).trim();
+const Y = DATA.years;
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("chart"), panel = document.getElementById("panel");
+const PSI = `Private Sector Initiative (FY${DATA.psi[0]}–${String(DATA.psi[1]).slice(2)}): refugees whose admission private sponsors paid for. The source counts them in their own column, not by region.`;
+let view = "region", selFy = Y[Y.length - 1].fy;
+try { const v = localStorage.getItem("trb-view"); if (v === "countries" || v === "region") view = v; } catch (e) {}
+
+// Flag emoji only where the system draws them in colour (Windows shows two letters instead, so they're left out there).
+const FLAGS = (() => {
+  try {
+    const c = document.createElement("canvas"); c.width = c.height = 24;
+    const x = c.getContext("2d"); x.textBaseline = "top"; x.font = "20px sans-serif";
+    x.fillText("\u{1F1FA}\u{1F1F8}", 0, 0);
+    const d = x.getImageData(0, 0, 24, 24).data;
+    for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 128 && Math.max(d[i], d[i + 1], d[i + 2]) - Math.min(d[i], d[i + 1], d[i + 2]) > 60) return true;
+  } catch (e) {}
+  return false;
+})();
+const flag = iso => FLAGS && iso ? `<span aria-hidden="true">${String.fromCodePoint(...[...iso].map(ch => 0x1F1E6 + ch.charCodeAt(0) - 65))}</span> ` : "";
+
+// the years a view shows: countries are listed only from FY2001
+const span = () => view === "countries" ? Y.filter(y => y.n != null) : Y;
+// date → position on the fiscal-year axis, counted in years from the start of FY fy0 (FY n = Oct. 1, n−1 … Sept. 30, n)
+function fyPos(iso, fy0) {
+  const d = new Date(iso + "T00:00:00Z"), y = d.getUTCFullYear();
+  const fy = d.getUTCMonth() >= 9 ? y + 1 : y;
+  const start = Date.UTC(fy - 1, 9, 1), end = Date.UTC(fy, 9, 1);
+  return (fy - fy0) + (d - start) / (end - start);
+}
+const presIn = fy => PRES.filter(p => fyPos(p.start, fy) < 1 && fyPos(p.end, fy) > 0);
+function el(tag, attrs, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  if (parent) parent.appendChild(e);
+  return e;
+}
+
+let G = {};
+function draw() {
+  const V = span(), N = V.length, FY0 = V[0].fy, LASTFY = V[N - 1].fy;
+  const W = svg.clientWidth || 700;
+  const narrow = W < 560;
+  const H = Math.round(Math.max(280, Math.min(440, W * 0.55)));
+  const m = { l: narrow ? 40 : 58, r: 30, t: 30, b: 80 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const slot = iw / N, bw = Math.max(2, slot * 0.74);
+  const xs = i => m.l + i * slot;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`); svg.setAttribute("height", H);
+  svg.textContent = "";
+  const region = view === "region";
+  const vmax = region ? 210000 : 90;
+  const ys = v => m.t + ih - (v / vmax) * ih;
+  const ticks = region ? [0, 50000, 100000, 150000, 200000] : [0, 25, 50, 75];
+  for (const t of ticks) {
+    el("line", { x1: m.l, x2: W - m.r, y1: ys(t), y2: ys(t), stroke: t ? "var(--rule)" : "var(--ink)", "stroke-width": t ? 1 : 1.5 }, svg);
+    el("text", { x: m.l - 6, y: ys(t) + 4, "text-anchor": "end" }, svg, region ? (narrow && t ? `${t / 1000}k` : fmt(t)) : t);
+  }
+  // what the bars measure: people in one view, countries in the other
+  el("text", { x: 0, y: 12, class: "yt" }, svg, region ? "Refugees admitted" : "Number of countries (not refugees)");
+  // stacked bars: people by region, or (country view) the number of countries from each region
+  const bars = el("g", {}, svg);
+  G.cols = [];
+  V.forEach((y, i) => {
+    const g = el("g", {}, bars), x = xs(i) + (slot - bw) / 2, parts = region ? y.r : y.nr;
+    let base = 0;
+    for (const k of ORDER) {
+      const v = parts[k]; if (!v) continue;
+      el("rect", { x, width: bw, y: ys(base + v), height: Math.max(0, ys(base) - ys(base + v)), fill: col(k),
+                   stroke: "var(--paper)", "stroke-width": region ? 0.75 : 1 }, g);
+      base += v;
+    }
+    G.cols.push(g);
+  });
+  if (region) {
+    const my = ys(DATA.median);
+    el("line", { x1: m.l, x2: W - m.r, y1: my, y2: my, stroke: "var(--ink)", "stroke-width": 1.5, "stroke-dasharray": "6 5" }, svg);
+    el("text", { x: W - m.r, y: my - 6, "text-anchor": "end", style: "fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:4px;stroke-linejoin:round" }, svg, `${narrow ? "Median" : "Typical year (median)"}: ${fmt(DATA.median)}`);
+  }
+  // year labels: first, last, and round years in between that don't crowd the ends
+  const step = narrow ? 10 : 5, gap = (narrow ? 26 : 34) / slot;
+  V.forEach((y, i) => {
+    const end = y.fy === FY0 || y.fy === LASTFY;
+    if (!end && (y.fy % step || i < gap || N - 1 - i < gap)) return;
+    el("text", { x: xs(i) + slot / 2, y: m.t + ih + 15, "text-anchor": "middle" }, svg, narrow ? `'${String(y.fy).slice(2)}` : y.fy);
+  });
+  // presidents band (exact dates on the fiscal-year axis)
+  const pg = el("g", { class: "pres" }, svg), py = m.t + ih + 24, ph = 32;
+  PRES.forEach((p, j) => {
+    const a = Math.max(0, fyPos(p.start, FY0)), b = Math.min(N, fyPos(p.end, FY0));
+    if (b <= a) return;
+    // the current term runs on past the data, into the right margin, which also gives its label room
+    const x0 = m.l + a * slot, x1 = p.ongoing ? W : m.l + b * slot, cx = (x0 + x1) / 2, room = x1 - x0 - 6;
+    el("rect", { x: x0, width: x1 - x0 - 1, y: py, height: ph, fill: j % 2 ? "var(--pres-b)" : "var(--pres-a)" }, pg);
+    // name on top, party below; the name shortens ("H.W. Bush" → "Bush") or drops out where the term is too narrow
+    const nm = el("text", { x: cx, y: py + 14, "text-anchor": "middle" }, pg);
+    for (const label of [p.short, p.short.split(" ").pop(), ""]) {
+      nm.textContent = label;
+      if (nm.getComputedTextLength() <= room) break;
+    }
+    const pt = el("text", { x: cx, y: nm.textContent ? py + 26 : py + 20, "text-anchor": "middle", class: nm.textContent ? "pty" : "" }, pg, `(${p.party})`);
+    if (pt.getComputedTextLength() > room + 4) pt.textContent = p.party;
+  });
+  el("text", { x: m.l, y: py + ph + 13 }, svg, "President in office");
+  // selection marker
+  G.mark = el("rect", { y: m.t - 4, height: ih + 4, fill: "none", stroke: "var(--ink)", "stroke-width": 1.5, rx: 2 }, svg);
+  Object.assign(G, { V, N, xs, slot, bw, m });
+  let i = V.findIndex(y => y.fy === selFy);
+  if (i < 0) i = selFy < FY0 ? 0 : N - 1;
+  select(i, false);
+}
+
+function rows(list) { return `<div class="rows">${list.join("")}</div>`; }
+const row = (k, name, v, small = "") =>
+  `<div class="row"><span class="sw" style="background:${col(k)}" title="${DATA.labels[k]}"></span><span class="nm">${name}</span><span class="v">${v}${small ? `<small>${small}</small>` : ""}</span></div>`;
+
+function select(i) {
+  const { V, N } = G;
+  i = Math.max(0, Math.min(N - 1, i));
+  const y = V[i];
+  selFy = y.fy;
+  G.mark.setAttribute("x", G.xs(i) + (G.slot - G.bw) / 2 - 2.5);
+  G.mark.setAttribute("width", G.bw + 5);
+  G.cols.forEach((g, j) => g.setAttribute("opacity", j === i ? 1 : 0.8));
+  const pres = presIn(y.fy).map(p => `${p.name} (${p.party})`).join(" → ");
+  let h = `<div class="fy">FY${y.fy}</div><div class="dates">Oct. 1, ${y.fy - 1} – Sept. 30, ${y.fy}</div>`;
+  h += `<div class="total">${fmt(y.total)}<small>refugees admitted</small></div>`;
+  if (y.fy <= 1979) h += `<div class="note" style="margin-top:2px">A rounded estimate in the source.</div>`;
+  h += `<div class="pres">${pres}</div>`;
+  if (y.ceiling) h += `<div class="note">Ceiling set by presidential determination: ${fmt(y.ceiling)}</div>`;
+  const top = head => `<h3>${head}</h3>` + rows(y.top.map(([c, v, k, iso]) => row(k, flag(iso) + c, fmt(v))));
+  const five = y.n > 5 ? "largest 5" : "all";
+  if (view === "countries") {
+    h += `<h3>From ${y.n} ${y.n === 1 ? "country" : "countries"}, by region</h3>`;
+    h += rows(ORDER.slice().reverse().filter(k => y.nr[k]).map(k => row(k, DATA.labels[k], y.nr[k])));
+    h += top(`${five[0].toUpperCase() + five.slice(1)} (color shows region)`);
+  } else {
+    h += `<h3>By region</h3>` + rows(ORDER.slice().reverse().filter(k => y.r[k]).map(k => row(k, DATA.labels[k], fmt(y.r[k]), pct(y.r[k] / y.total))));
+    if (y.r.other_psi) h += `<div class="note">${PSI}</div>`;
+    if (y.n != null) h += top(`From ${y.n} ${y.n === 1 ? "country" : "countries"} · ${five}`);
+    else h += `<div class="note">Country-level figures start in FY${DATA.countryFrom}.</div>`;
+  }
+  panel.innerHTML = h;
+  svg.setAttribute("aria-label", `FY${y.fy}: ${fmt(y.total)} refugees admitted${y.n != null ? ` from ${y.n} countries` : ""}. ${pres}.`);
+}
+
+function idxAt(evt) {
+  const r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+  const x = (evt.clientX - r.left) * (vb.width / r.width);
+  return Math.floor((x - G.m.l) / G.slot);
+}
+const cur = () => G.V.findIndex(y => y.fy === selFy);
+svg.addEventListener("pointermove", e => { const i = idxAt(e); if (i >= 0 && i < G.N && i !== cur()) select(i); });
+svg.addEventListener("pointerdown", e => { const i = idxAt(e); if (i >= 0 && i < G.N) select(i); });
+svg.addEventListener("keydown", e => {
+  const k = { ArrowLeft: cur() - 1, ArrowRight: cur() + 1, Home: 0, End: G.N - 1 }[e.key];
+  if (k != null) { select(k); e.preventDefault(); }
+});
+
+const lg = document.getElementById("legend"), cap = document.getElementById("cap"), psiNote = document.getElementById("psiNote");
+function setView(v) {
+  view = v;
+  document.getElementById("v-region").setAttribute("aria-pressed", v === "region");
+  document.getElementById("v-countries").setAttribute("aria-pressed", v === "countries");
+  try { localStorage.setItem("trb-view", v); } catch (e) {}
+  const c = v === "countries";
+  cap.innerHTML = c
+    ? `<b>How many countries refugees came from each year, colored by region.</b> <span>Bar height counts countries, not people; the year panel gives the number of refugees. FY${DATA.countryFrom}–FY${DATA.fyLast}. The State Department's admissions summary lists countries only from FY${DATA.countryFrom}; earlier years are reported by region alone.</span>`
+    : `<b>Refugees admitted each fiscal year, by region of origin.</b> <span>FY${Y[0].fy}–FY${DATA.fyLast}.</span>`;
+  lg.innerHTML = ORDER.slice().reverse().filter(k => !(c && k === "other_psi"))
+    .map(k => `<li><span class="sw" style="background:${col(k)}"></span>${DATA.labels[k]}</li>`).join("");
+  psiNote.innerHTML = c ? "" : `<span class="sw"></span>${PSI}`;
+  draw();
+}
+document.getElementById("v-region").onclick = () => setView("region");
+document.getElementById("v-countries").onclick = () => setView("countries");
+if (matchMedia("(hover: none)").matches) document.getElementById("hint").textContent = "Tap a year to see its details.";
+
+// table + as-of
+document.getElementById("asof").textContent = DATA.asOf;
+const cols = ORDER.slice().reverse();
+let t = `<thead><tr><th>Fiscal year</th><th>Total</th>${cols.map(k => `<th>${DATA.labels[k]}</th>`).join("")}<th>Countries</th></tr></thead><tbody>`;
+for (const y of Y.slice().reverse())
+  t += `<tr><td>FY${y.fy}</td><td>${fmt(y.total)}</td>${cols.map(k => `<td>${y.r[k] ? fmt(y.r[k]) : "–"}</td>`).join("")}<td>${y.n ?? "–"}</td></tr>`;
+document.getElementById("table").innerHTML = t + "</tbody>";
+
+new ResizeObserver(() => draw()).observe(svg.parentElement);
+setView(view);
+</script>
+</body>
+</html>
