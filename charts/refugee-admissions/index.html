@@ -72,7 +72,7 @@ h1 { font-family: var(--f-head); font-weight: 800; font-size: clamp(36px, 6vw, 6
 .panel .fy { font-family: var(--f-head); font-weight: 800; font-size: 40px; line-height: 1; }
 .panel .dates { font: 12px var(--f-mono); color: var(--muted); margin-top: 4px; }
 .panel .total { font-family: var(--f-num); font-weight: 600; font-size: 34px; font-variant-numeric: tabular-nums; margin-top: 12px; }
-.panel .total small { font: 500 13px var(--f-mono); color: var(--muted); margin-left: 6px; }
+.panel .total small { font: 500 13px var(--f-mono); color: var(--muted); margin-left: 6px; display: inline-block; white-space: nowrap; }
 .panel .pres { font: 500 13px var(--f-mono); margin-top: 6px; }
 .panel h3 { font: 500 11px var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 16px 0 8px; }
 .rows { display: grid; gap: 6px; }
@@ -87,11 +87,15 @@ h1 { font-family: var(--f-head); font-weight: 800; font-size: clamp(36px, 6vw, 6
 .legend .sw { width: 12px; height: 12px; border-radius: 2px; }
 .legend-note { font: 12.5px/1.5 var(--f-mono); color: var(--muted); margin: 8px 0 0; max-width: 75ch; }
 .legend-note .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: var(--r-other_psi); margin-right: 6px; }
+.foot { font: 12px/1.5 var(--f-mono); color: var(--muted); margin: 8px 0 0; max-width: 90ch; }
 details { margin-top: 28px; border-top: 1.5px solid var(--ink); padding-top: 12px; }
 summary { font: 500 14px var(--f-mono); cursor: pointer; }
 .tbl { overflow-x: auto; margin-top: 12px; }
-table { border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; min-width: 760px; }
+table { border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
 th, td { padding: 5px 10px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+/* headers wrap and the year column stays put when a narrow screen scrolls the table sideways */
+th { white-space: normal; vertical-align: bottom; min-width: 6.5em; }
+th:first-child, td:first-child { position: sticky; left: 0; background: var(--paper); }
 th { font: 500 11px var(--f-mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
 th:first-child, td:first-child { text-align: left; }
 .sources { margin-top: 28px; border-top: 1.5px solid var(--ink); padding-top: 12px; font: 12.5px/1.6 var(--f-mono); color: var(--muted); max-width: 90ch; }
@@ -127,6 +131,7 @@ th:first-child, td:first-child { text-align: left; }
   <details>
     <summary>Show the data table</summary>
     <div class="tbl"><table id="table"></table></div>
+    <p class="foot" id="tableFoot"></p>
   </details>
 
   <div class="sources">
@@ -146,7 +151,11 @@ const col = k => css.getPropertyValue(`--r-${k}`).trim();
 const Y = DATA.years;
 const NS = "http://www.w3.org/2000/svg";
 const svg = document.getElementById("chart"), panel = document.getElementById("panel");
-const PSI = `Private Sector Initiative (FY${DATA.psi[0]}–${String(DATA.psi[1]).slice(2)}): refugees whose admission private sponsors paid for. The source counts them in their own column, not by region.`;
+// The Private Sector Initiative is not a region: it stays in the bars (so they add up to each year's total) but gets
+// no legend entry, panel row or table column, only footnotes (William, 2026-10-11).
+const PSI_YEARS = `FY${DATA.psi[0]}–${String(DATA.psi[1]).slice(2)}`;
+const PSI_TOTAL = Y.reduce((s, y) => s + (y.r.other_psi || 0), 0);
+const REGIONS = ORDER.filter(k => k !== "other_psi");
 let view = "region", selFy = Y[Y.length - 1].fy;
 try { const v = localStorage.getItem("trb-view"); if (v === "countries" || v === "region") view = v; } catch (e) {}
 
@@ -269,7 +278,7 @@ function select(i) {
   G.cols.forEach((g, j) => g.setAttribute("opacity", j === i ? 1 : 0.8));
   const pres = presIn(y.fy).map(p => `${p.name} (${p.party})`).join(" → ");
   let h = `<div class="fy">FY${y.fy}</div><div class="dates">Oct. 1, ${y.fy - 1} – Sept. 30, ${y.fy}</div>`;
-  h += `<div class="total">${fmt(y.total)}<small>refugees admitted</small></div>`;
+  h += `<div class="total">${fmt(y.total)}<small>refugees admitted${y.r.other_psi ? "*" : ""}</small></div>`;
   if (y.fy <= 1979) h += `<div class="note" style="margin-top:2px">A rounded estimate in the source.</div>`;
   h += `<div class="pres">${pres}</div>`;
   if (y.ceiling) h += `<div class="note">Ceiling set by presidential determination: ${fmt(y.ceiling)}</div>`;
@@ -280,8 +289,8 @@ function select(i) {
     h += rows(ORDER.slice().reverse().filter(k => y.nr[k]).map(k => row(k, DATA.labels[k], y.nr[k])));
     h += top(`${five[0].toUpperCase() + five.slice(1)} (color shows region)`);
   } else {
-    h += `<h3>By region</h3>` + rows(ORDER.slice().reverse().filter(k => y.r[k]).map(k => row(k, DATA.labels[k], fmt(y.r[k]), pct(y.r[k] / y.total))));
-    if (y.r.other_psi) h += `<div class="note">${PSI}</div>`;
+    h += `<h3>By region</h3>` + rows(REGIONS.slice().reverse().filter(k => y.r[k]).map(k => row(k, DATA.labels[k], fmt(y.r[k]), pct(y.r[k] / y.total))));
+    if (y.r.other_psi) h += `<div class="note">* Includes ${fmt(y.r.other_psi)} admitted through the Private Sector Initiative, which the source counts apart from the regions.</div>`;
     if (y.n != null) h += top(`From ${y.n} ${y.n === 1 ? "country" : "countries"} · ${five}`);
     else h += `<div class="note">Country-level figures start in FY${DATA.countryFrom}.</div>`;
   }
@@ -312,9 +321,9 @@ function setView(v) {
   cap.innerHTML = c
     ? `<b>How many countries refugees came from each year, colored by region.</b> <span>Bar height counts countries, not people; the year panel gives the number of refugees. FY${DATA.countryFrom}–FY${DATA.fyLast}. The State Department's admissions summary lists countries only from FY${DATA.countryFrom}; earlier years are reported by region alone.</span>`
     : `<b>Refugees admitted each fiscal year, by region of origin.</b> <span>FY${Y[0].fy}–FY${DATA.fyLast}.</span>`;
-  lg.innerHTML = ORDER.slice().reverse().filter(k => !(c && k === "other_psi"))
+  lg.innerHTML = REGIONS.slice().reverse()
     .map(k => `<li><span class="sw" style="background:${col(k)}"></span>${DATA.labels[k]}</li>`).join("");
-  psiNote.innerHTML = c ? "" : `<span class="sw"></span>${PSI}`;
+  psiNote.innerHTML = c ? "" : `<span class="sw"></span>Thin gray slices, ${PSI_YEARS}: the Private Sector Initiative, which the source counts apart from the regions.`;
   draw();
 }
 document.getElementById("v-region").onclick = () => setView("region");
@@ -323,11 +332,12 @@ if (matchMedia("(hover: none)").matches) document.getElementById("hint").textCon
 
 // table + as-of
 document.getElementById("asof").textContent = DATA.asOf;
-const cols = ORDER.slice().reverse();
+const cols = REGIONS.slice().reverse();
 let t = `<thead><tr><th>Fiscal year</th><th>Total</th>${cols.map(k => `<th>${DATA.labels[k]}</th>`).join("")}<th>Countries</th></tr></thead><tbody>`;
 for (const y of Y.slice().reverse())
-  t += `<tr><td>FY${y.fy}</td><td>${fmt(y.total)}</td>${cols.map(k => `<td>${y.r[k] ? fmt(y.r[k]) : "–"}</td>`).join("")}<td>${y.n ?? "–"}</td></tr>`;
+  t += `<tr><td>FY${y.fy}${y.r.other_psi ? "*" : ""}</td><td>${fmt(y.total)}</td>${cols.map(k => `<td>${y.r[k] ? fmt(y.r[k]) : "–"}</td>`).join("")}<td>${y.n ?? "–"}</td></tr>`;
 document.getElementById("table").innerHTML = t + "</tbody>";
+document.getElementById("tableFoot").textContent = `* Totals include refugees admitted through the Private Sector Initiative (${fmt(PSI_TOTAL)} in ${PSI_YEARS}), which the source counts apart from the regions.`;
 
 new ResizeObserver(() => draw()).observe(svg.parentElement);
 setView(view);
